@@ -83,3 +83,36 @@ if ($script -and (Test-Path -Path $script)) {
 ```
 
 Im Moment habe ich noch das Problem, dass beim Laden des Skripts dann trotzdem die Fehlermeldung: **.: AuthorizationManager check failed.** Das sieht so aus, als ob gar nicht das Skript selbst das Problem hat, sondern der "Kontext" .
+
+## Ingress am minikube einrichten
+
+Ingress ist ein Service, dass am K8s Cluster selbst läuft. Es ist dafür zuständig, dass die Außenwelt (außerhalb des Clusters) die Services im Cluster (ClusterIP) erreicht. Dazu bin ich dieser Anleitung gefolgt [https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/](https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/)
+
+1. Aktivieren von ingress auf minikube: ``minikube addons enable ingress``
+2. Mit ``kubectl get pods -n ingress-nginx`` kann man die Pods im ingress Namespace kontrollieren (es sollte einen admission-create und einen admission-patch - im Status Completed - geben und einen controller im Status running)
+3. Deployen einer Test-Applikation
+  1. ``kubectl create deployment web --image=gcr.io/google-samples/hello-app:1.0`` (Als Ausgabe sollte man dann ``deployment.apps/web created`` sehen, man kann auch mit kubectl get deployment web den Status prüfen)
+  2. Das Service auf Port 8080 exposen: ``kubectl expose deployment web --type=NodePort --port=8080`` (Als Ausgabe sollte man dann ``service/web exposed`` erhalten)
+  3. ``minikube service web --url`` - das Service aufrufen? Es wird eine http-Adresse ausgegeben. Diese im lokalen Browser öffnen und man ist mit der Testapplikation verbunden (die nicht besonders spannend ist, weil sie nur einen statischen Output produziert)
+
+Wenn man dann ein ingress Service mit einer Konfiguration erstellen will, kann man diese Vorlage verwenden (als ``example-ingress.yaml`` speichern):
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: hello-world.example
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port:
+                  number: 8080
+```
+Dann muss man nur noch ``kubectl apply -f example-ingress.yaml`` auführen und kann anschließend aus dem WSL mit diesem Befehl ``curl --resolve "hello-world.example:80:$( minikube ip )" -i http://hello-world.example`` die App ansurfen. Wenn man die IP von ``minikube ip`` in seinem lokalen hosts File am Client einträgt (mit dem entsprechenden hello-word.example) sollte man es auch vom Browser am lokalen Client aufrufen können (aber das klappt bei mir nicht).
