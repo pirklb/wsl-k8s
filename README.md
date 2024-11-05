@@ -82,7 +82,7 @@ if ($script -and (Test-Path -Path $script)) {
 }
 ```
 
-Im Moment habe ich noch das Problem, dass beim Laden des Skripts dann trotzdem die Fehlermeldung: **.: AuthorizationManager check failed.** Das sieht so aus, als ob gar nicht das Skript selbst das Problem hat, sondern der "Kontext" .
+Im Moment habe ich noch das Problem, dass beim Laden des Skripts dann trotzdem die Fehlermeldung: **.: AuthorizationManager check failed.** Das sieht so aus, als ob gar nicht das Skript selbst das Problem hat, sondern der "Kontext" . Wenn man bei der Frage, ob man dem Skript vertraut (bzw. dem Author) mit R antwortet (nur einmal vertrauen) funktioniert es, der Fehler kommt nur, wenn man als Antwort A (immer vertrauen) nimmt.
 
 ## Ingress am minikube einrichten
 
